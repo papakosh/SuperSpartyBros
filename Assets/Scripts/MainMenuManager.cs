@@ -11,10 +11,12 @@ public class MainMenuManager : MonoBehaviour {
 	public GameObject _MainMenu;
 	public GameObject _LevelsMenu;
 	public GameObject _AboutMenu;
+	public GameObject _CreditsMenu;
 
 	// references to Button GameObjects
 	public GameObject MenuDefaultButton;
 	public GameObject AboutDefaultButton;
+	public GameObject CreditsDefaultButton;
 	public GameObject LevelSelectDefaultButton;
 	public GameObject QuitButton;
 
@@ -126,8 +128,9 @@ public class MainMenuManager : MonoBehaviour {
 	{
 		// turn all menus off
 		_MainMenu.SetActive (false);
-		_AboutMenu.SetActive(false);
-		_LevelsMenu.SetActive(false);
+		_AboutMenu.SetActive (false);
+		_LevelsMenu.SetActive (false);
+		_CreditsMenu.SetActive (false);
 
 		// turn on desired menu and set default selected button for controller input
 		switch(name) {
@@ -145,6 +148,11 @@ public class MainMenuManager : MonoBehaviour {
 			_AboutMenu.SetActive(true);
 			EventSystem.current.SetSelectedGameObject (AboutDefaultButton);
 			titleText.text = "About";
+			break;
+		case "Credits":
+			_CreditsMenu.SetActive (true);
+			EventSystem.current.SetSelectedGameObject (CreditsDefaultButton);
+			titleText.text = "Credits";
 			break;
 		}
 	}
