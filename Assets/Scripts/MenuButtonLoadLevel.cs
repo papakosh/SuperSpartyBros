@@ -5,6 +5,6 @@ public class MenuButtonLoadLevel : MonoBehaviour {
 
 	public void loadLevel(string leveltoLoad)
 	{
-		Application.LoadLevel (leveltoLoad);
+		UnityEngine.SceneManagement.SceneManager.LoadScene(leveltoLoad);
 	}
 }

@@ -14,7 +14,6 @@ public class PlatformMover : MonoBehaviour {
 	public bool loop = true; // should it loop through the waypoints
 
 	// private variables
-
 	Transform _transform;
 	int _myWaypointIndex = 0;		// used as index for My_Waypoints
 	float _moveTime;
@@ -32,15 +31,6 @@ public class PlatformMover : MonoBehaviour {
 	
 	// game loop
 	void Update () {
-		if (!loop && !_moving && _transform.childCount > 0) {
-			_moving = true;
-			GameManager.gm.PlayerAtBoss ();
-		}
-		else if (!loop && _moving && _transform.childCount == 0) {
-			_moving = false;
-			GameManager.gm.BossCanEngagePlayer ();
-			Destroy (gameObject);
-		}
 		// if beyond _moveTime, then start moving
 		if (Time.time >= _moveTime && _moving) {
 			Movement();
@@ -50,7 +40,6 @@ public class PlatformMover : MonoBehaviour {
 	void Movement() {
 		// if there isn't anything in My_Waypoints
 		if ((myWaypoints.Length != 0) && (_moving)) {
-
 			// move towards waypoint
 			_transform.position = Vector3.MoveTowards(_transform.position, myWaypoints[_myWaypointIndex].transform.position, moveSpeed * Time.deltaTime);
 

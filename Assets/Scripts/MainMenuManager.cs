@@ -164,7 +164,7 @@ public class MainMenuManager : MonoBehaviour {
 		PlayerPrefManager.ResetPlayerState(startLives,false);
 
 		// load the specified level
-		Application.LoadLevel (leveltoLoad);
+		UnityEngine.SceneManagement.SceneManager.LoadScene(leveltoLoad);
 	}
 
 	// quit the game

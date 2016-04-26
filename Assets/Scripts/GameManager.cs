@@ -76,12 +76,14 @@ public class GameManager : MonoBehaviour {
 		// if levels not specified, default to current level
 		if (levelAfterVictory=="") {
 			Debug.LogWarning("levelAfterVictory not specified, defaulted to current level");
-			levelAfterVictory = Application.loadedLevelName;
+			//levelAfterVictory = Application.loadedLevelName;
+			levelAfterVictory = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 		}
 		
 		if (levelAfterGameOver=="") {
 			Debug.LogWarning("levelAfterGameOver not specified, defaulted to current level");
-			levelAfterGameOver = Application.loadedLevelName;
+			//levelAfterGameOver = Application.loadedLevelName;
+			levelAfterGameOver = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 		}
 
 		// friendly error messages
@@ -125,8 +127,8 @@ public class GameManager : MonoBehaviour {
 		// set the text elements of the UI
 		UIScore.text = "Score: "+score.ToString();
 		UIHighScore.text = "Highscore: "+highscore.ToString ();
-		UILevel.text = Application.loadedLevelName;
-		
+		//UILevel.text = Application.loadedLevelName;
+		UILevel.text = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 		// turn on the appropriate number of life indicators in the UI based on the number of lives left
 		for(int i=0;i<UIExtraLives.Length;i++) {
 			if (i<(lives-1)) { // show one less than the number of lives since you only typically show lifes after the current life in UI
@@ -164,20 +166,19 @@ public class GameManager : MonoBehaviour {
 			PlayerPrefManager.SavePlayerState (score, highscore, lives);
 
 			// load the gameOver screen
-			Application.LoadLevel (levelAfterGameOver);
+			UnityEngine.SceneManagement.SceneManager.LoadScene(levelAfterGameOver);
 		} else { // tell the player to respawn
-			if (bossCondition){ // player at boss then respawn near boss and not level beginning
+			if (bossCondition){ // if player at boss then respawn near boss and not level beginning
 				GameObject bossObject = GameObject.FindGameObjectWithTag("Boss");
-				//Debug.Log ("Boss position = " + bossObject.transform.position.x.ToString ());
 				float bossPositionX = bossObject.transform.position.x;
 				float deathDistanceFromLeftBoundary = _deathPositionX - spawnLeftBoundaryPositionX;
 				float deathDistanceFromRightBoundary = spawnRightBoundaryPositionX - _deathPositionX;
 
 				if ((deathDistanceFromLeftBoundary > deathDistanceFromRightBoundary)) {
-					// die to the right of boss, spawn 2 units to his left
+					// player die's to the right of boss, spawn 2 units to his left
 					_spawnPositionX = bossPositionX - 2;
 					_spawnLocation = new Vector3 (_spawnPositionX, -1.73f, 0f);
-				} else { // die to the left of boss, spawn 2 units to his right
+				} else { // player die's to the left of boss, spawn 2 units to his right
 					_spawnPositionX = bossPositionX + 2;
 					_spawnLocation = new Vector3 (_spawnPositionX, -1.73f, 0f); 
 				}
@@ -218,7 +219,7 @@ public class GameManager : MonoBehaviour {
 	// load the nextLevel after delay
 	IEnumerator LoadNextLevel() {
 		yield return new WaitForSeconds(3.5f); 
-		Application.LoadLevel (levelAfterVictory);
+		UnityEngine.SceneManagement.SceneManager.LoadScene(levelAfterVictory);
 	}
 
 	IEnumerator HidePickupUI() {

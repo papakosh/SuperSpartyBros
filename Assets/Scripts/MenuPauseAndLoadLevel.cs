@@ -13,6 +13,6 @@ public class MenuPauseAndLoadLevel : MonoBehaviour {
 
 	// load the specified level
 	void LoadLevel() {
-		Application.LoadLevel(levelToLoad);
+		UnityEngine.SceneManagement.SceneManager.LoadScene(levelToLoad);
 	}
 }
