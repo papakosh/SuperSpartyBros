@@ -99,9 +99,10 @@ public class Enemy : MonoBehaviour {
 		{
 			if (Time.time >= _moveTime) {
 				if (gameObject.tag == "Boss") {
-					if (GameManager.gm.CanBossEngagePlayer () && GameManager.gm.IsInitialBossEngagement ()) {
+					if (GameManager.gm.IsPlayerAtBoss () && GameManager.gm.IsInitialBossEngagement ()) {
 						StartCoroutine (BossUIDisplay  ());
-					} else if (GameManager.gm.CanBossEngagePlayer ()) {
+
+					} else if (GameManager.gm.CanBossEngagePlayer()) {
 						BossMovement ();
 					}
 				}else
@@ -226,8 +227,17 @@ public class Enemy : MonoBehaviour {
 				_moveTime = Time.time + stunnedTime;
 			}
 		} else if (collision.tag == "Dagger") {
-			ApplyDamage (1);
-			Destroy (collision.gameObject);
+			if (gameObject.tag == "Boss") {
+				if (GameManager.gm.CanBossEngagePlayer ()) {
+					ApplyDamage (1);
+					Destroy (collision.gameObject);
+				} else {
+					Destroy (collision.gameObject);
+				}
+			} else {
+				ApplyDamage (1);
+				Destroy (collision.gameObject);
+			}
 		}
 
 	}

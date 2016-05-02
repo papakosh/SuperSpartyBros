@@ -303,5 +303,4 @@ public class CharacterController2D : MonoBehaviour {
 	public bool facingRight (){
 		return _facingRight;
 	}
-
 }

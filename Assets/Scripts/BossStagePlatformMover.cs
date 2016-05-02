@@ -33,10 +33,9 @@ public class BossStagePlatformMover : MonoBehaviour {
 		if (_myWaypointIndex == 0  && !_moving && _transform.childCount > 0) { 
 			// if at start waypoint, not moving yet, and player is onboard, then start moving and set boss condition
 			_moving = true;
-			GameManager.gm.PlayerAtBoss ();
 		}else if (_myWaypointIndex==2 &&_transform.childCount == 0) {
 			// if final waypoint and player is not onboard, then start boss scene and destroy platform
-			GameManager.gm.BossCanEngagePlayer ();
+			GameManager.gm.PlayerAtBoss ();
 			Destroy (gameObject);
 		}else if (Time.time >= _moveTime && _moving) {
 			// if beyond _moveTime, then start moving
@@ -62,5 +61,11 @@ public class BossStagePlatformMover : MonoBehaviour {
 				_moving = false;
 			}
 		}
+	}
+
+	public void resetMovement (float xVal, float yVal){
+		_myWaypointIndex = 0;
+		_moving = false;
+		_transform.position = new Vector3(xVal, yVal, 0.00f); 
 	}
 }

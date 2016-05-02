@@ -30,7 +30,12 @@ public class Shooter : MonoBehaviour {
 			if (projectile)
 			{
 				// Instantiante projectile at the player + 1 meter forward with -90 rotation to have it point forwards
-				GameObject newProjectile = Instantiate(projectile, transform.position + transform.forward, Quaternion.Euler(0, 0, -90)) as GameObject;
+				int daggerRotation = 0;
+				if (GetComponent<CharacterController2D> ().facingRight ())
+					daggerRotation = -90;
+				else
+					daggerRotation = 90;
+				GameObject newProjectile = Instantiate(projectile, transform.position + transform.forward, Quaternion.Euler(0, 0, daggerRotation)) as GameObject;
 
 				// if the projectile does not have a rigidbody component, add one
 				if (!newProjectile.GetComponent<Rigidbody2D>()) 
