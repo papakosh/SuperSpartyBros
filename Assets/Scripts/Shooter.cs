@@ -4,13 +4,11 @@ using UnityStandardAssets.CrossPlatformInput;
 
 public class Shooter : MonoBehaviour {
 
-	// Reference to projectile prefab to shoot
-	public GameObject projectile;
-	public float power = 10.0f;
-	public float rateOfFire = 0.5f;
+	public GameObject projectile; // Reference to projectile prefab to shoot
+	public float power = 10.0f; // Amount of power to shoot projectile
+	public float rateOfFire = 0.5f; // How often to shoot each time user presses 'shoot'
 
-	// Reference to AudioClip to play
-	public AudioClip shootSFX;
+	public AudioClip shootSFX; // Reference to AudioClip to play
 
 	// Private variables
 	float _lastTimeFired = 0f;
@@ -20,7 +18,8 @@ public class Shooter : MonoBehaviour {
 		//Detect if player can fire
 		if (!GetComponent<CharacterController2D> ().canFire ())
 			return;
-		// Detect if fire button is pressed
+		
+		// Detect if fire button is pressed and enough time has passed since last firing
 		if (CrossPlatformInputManager.GetButtonDown("Fire1") && (Time.fixedTime - _lastTimeFired >= rateOfFire))
 		{	
 			// Set last time fired to current elapsed time (in secs)
@@ -29,13 +28,15 @@ public class Shooter : MonoBehaviour {
 			// if projectile is specified
 			if (projectile)
 			{
-				// Instantiante projectile at the player + 1 meter forward with -90 rotation to have it point forwards
 				int daggerRotation = 0;
-				if (GetComponent<CharacterController2D> ().facingRight ())
+				if (GetComponent<CharacterController2D> ().facingRight ()) // -90 rotation when player facing right
 					daggerRotation = -90;
-				else
+				else // otherwise 90 when player facing left
 					daggerRotation = 90;
-				GameObject newProjectile = Instantiate(projectile, transform.position + transform.forward, Quaternion.Euler(0, 0, daggerRotation)) as GameObject;
+
+				// Instantiante projectile at the player + 1 meter forward with proper rotation to have it always pointing forwards
+				GameObject newProjectile = Instantiate(projectile, 
+											transform.position + transform.forward, Quaternion.Euler(0, 0, daggerRotation)) as GameObject;
 
 				// if the projectile does not have a rigidbody component, add one
 				if (!newProjectile.GetComponent<Rigidbody2D>()) 
@@ -44,10 +45,8 @@ public class Shooter : MonoBehaviour {
 				}
 				// fire in the direction the player is facing - right or left
 				if (GetComponent<CharacterController2D> ().facingRight())
-					// Apply force to the newProjectile's Rigidbody component if it has one
 					newProjectile.GetComponent<Rigidbody2D>().AddForce(new Vector2(1, 0) * power, ForceMode2D.Force);
 				else
-					// Apply force to the newProjectile's Rigidbody component if it has one
 					newProjectile.GetComponent<Rigidbody2D>().AddForce(new Vector2(-1, 0) * power, ForceMode2D.Force);
 				
 				// play sound effect if set

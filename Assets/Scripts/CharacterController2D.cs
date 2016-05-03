@@ -108,7 +108,7 @@ public class CharacterController2D : MonoBehaviour {
 		_vy = _rigidbody.velocity.y;
 
 		// Check to see if character is grounded by raycasting from the middle of the player
-		// down to the groundCheck position and see if collected with gameobjects on the
+		// down to the groundCheck position and see if collided with gameobjects on the
 		// whatIsGround layer
 		_isGrounded = Physics2D.Linecast(_transform.position, groundCheck.position, whatIsGround);  
 
@@ -167,6 +167,7 @@ public class CharacterController2D : MonoBehaviour {
 
 		// update the scale
 		_transform.localScale = localScale;
+
 	}
 
 	// if the player collides with a MovingPlatform, then make it a child of that platform
@@ -245,12 +246,12 @@ public class CharacterController2D : MonoBehaviour {
 			// freeze the player
 			FreezeMotion();
 
-			// set last known x position
-			GameManager.gm.SetDeathPositionX(gameObject.transform.position.x);
+			// save x position of player's death
+			GameManager.gm.SaveXPositionOfPlayerDeath(gameObject.transform.position.x);
 
 			// play the death animation
 			_animator.SetTrigger("Death");
-			
+
 			// After waiting tell the GameManager to reset the game
 			yield return new WaitForSeconds(2.0f);
 
@@ -260,7 +261,7 @@ public class CharacterController2D : MonoBehaviour {
 				UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
 		}
 	}
-
+		
 	public void CollectCoin(int amount) {
 		PlaySound(coinSFX);
 
@@ -278,6 +279,7 @@ public class CharacterController2D : MonoBehaviour {
 			GameManager.gm.LevelCompete();
 	}
 
+	// public function for when player can now fire at the enemy
 	public void DaggerTaken(){
 		PlaySound(daggerSFX);
 		_canFire = true;
@@ -292,14 +294,17 @@ public class CharacterController2D : MonoBehaviour {
 		_animator.SetTrigger("Respawn");
 	}
 
+	// public function to bounce (jump) off an enemy's head
 	public void EnemyBounce(){
 		DoJump ();
 	}
 
+	// public function to indicate if player can fire
 	public bool canFire(){
 		return _canFire;
 	}
 
+	// public function to indicate if player facing right
 	public bool facingRight (){
 		return _facingRight;
 	}

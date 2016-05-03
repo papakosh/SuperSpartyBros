@@ -4,7 +4,7 @@ using System.Collections;
 public class Victory : MonoBehaviour {
 
 	public bool taken = false;
-	public GameObject explosion;
+	public GameObject victoryExplosion;
 
 	// if the player touches the victory object, it has not already been taken, and the player can move (not dead or victory)
 	// then the player has reached the victory point of the level
@@ -16,16 +16,16 @@ public class Victory : MonoBehaviour {
 			taken=true;
 
 			// if explosion prefab is provide, then instantiate it
-			if (explosion)
+			if (victoryExplosion)
 			{
-				Instantiate(explosion,transform.position,transform.rotation);
+				Instantiate(victoryExplosion,transform.position,transform.rotation);
 			}
 
 			// do the player victory thing
 			other.gameObject.GetComponent<CharacterController2D>().Victory();
 
 			// destroy the victory gameobject
-			DestroyObject(this.gameObject);
+			Destroy(this.gameObject);
 		}
 	}
 

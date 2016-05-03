@@ -5,22 +5,21 @@ public class Enemy : MonoBehaviour {
 	[Range(0f,10f)]
 	public float moveSpeed = 4f;  // enemy move speed when moving
 	public int damageAmount = 10; // probably deal a lot of damage to kill player immediately
-	public int enemyHealth = 1;
+	public int enemyHealth = 1; // amount of damage enemy can take
 
 
 	[Tooltip("Child gameObject for detecting stun.")]
 	public GameObject stunnedCheck; // what gameobject is the stunnedCheck
 
-	public float stunnedTime = 3f;   // how long to wait at a waypoint
-	
+	public float stunnedTime = 3f;   // how long to wait in stunned state
 	public string stunnedLayer = "StunnedEnemy";  // name of the layer to put enemy on when stunned
 	public string playerLayer = "Player";  // name of the layer to put enemy on when stunned
 
 	[HideInInspector]
 	public bool isStunned = false;  // flag for isStunned
+
 	[HideInInspector]
 	public bool enemyCanAttack = true;
-
 
 	public GameObject[] myWaypoints; // to define the movement waypoints
 	[Tooltip("How much time in seconds to wait at each waypoint")]
@@ -98,15 +97,17 @@ public class Enemy : MonoBehaviour {
 		if (!isStunned)
 		{
 			if (Time.time >= _moveTime) {
+				// If boss enemy, then do boss movement (chasing player)
 				if (gameObject.tag == "Boss") {
+					// If player is at the boss and in an initial engagement then display message to user
 					if (GameManager.gm.IsPlayerAtBoss () && GameManager.gm.IsInitialBossEngagement ()) {
 						StartCoroutine (BossUIDisplay  ());
 
-					} else if (GameManager.gm.CanBossEngagePlayer()) {
-						BossMovement ();
+					} else if (GameManager.gm.CanBossEngagePlayer()) { // or if boss can engage now, then chase player
+						BossChaseMovement ();
 					}
-				}else
-					EnemyMovement();
+				}else // otherwise do normal enemy movement
+					NormalEnemyMovement();
 			} else {
 				_animator.SetBool("Moving", false);
 				_animator.SetBool("MoveAndAttack", false);
@@ -115,8 +116,8 @@ public class Enemy : MonoBehaviour {
 	}
 	
 	// Move the enemy through its rigidbody based on its waypoints
-	void EnemyMovement() {
-		// if there isn't anything in My_Waypoints
+	void NormalEnemyMovement() {
+		// if there is anything in My_Waypoints and enemy can move then move
 		if ((myWaypoints.Length != 0) && (_moving)) {
 			
 			// make sure the enemy is facing the waypoint (based on previous movement)
@@ -155,14 +156,14 @@ public class Enemy : MonoBehaviour {
 	}
 
 	// Have the boss chase the player
-	void BossMovement() {
-		// if there isn't anything in My_Waypoints
+	void BossChaseMovement() {
+		// if boss can move, then move
 		if (_moving) {
 
 			// make sure the enemy is facing the waypoint (based on previous movement)
 			Flip (_vx);
 
-			// determine distance between waypoint and enemy
+			// determine distance between boss enemy and player
 			_vx = GameObject.FindGameObjectWithTag("Player").transform.position.x-_transform.position.x;
 
 			// if the enemy is close enough to waypoint, make it's new target the next waypoint
@@ -199,15 +200,16 @@ public class Enemy : MonoBehaviour {
 		_transform.localScale = localScale;
 	}
 	
-	// Attack player
+	// Handle enemy colliding with another game object (dagger or player)
 	void OnTriggerEnter2D(Collider2D collision)
 	{
-		if (!enemyCanAttack) {
-			if (collision.tag == "Dagger")
+		if (!enemyCanAttack) { // if enemy can't attack, then do nothing after colliding
+			if (collision.tag == "Dagger") // if collision is with a dagger, then destroy dagger
 				Destroy (collision.gameObject);
 			return;
 		}
 
+		// if collision is with a player and enemy not stunned, then the player takes damage
 		if ((collision.tag == "Player") && !isStunned) {
 			CharacterController2D player = collision.gameObject.GetComponent<CharacterController2D> ();
 			if (player.playerCanMove) {
@@ -226,15 +228,15 @@ public class Enemy : MonoBehaviour {
 				// stop to enjoy killing the player
 				_moveTime = Time.time + stunnedTime;
 			}
-		} else if (collision.tag == "Dagger") {
-			if (gameObject.tag == "Boss") {
+		} else if (collision.tag == "Dagger") { // or if collision is with a dagger, then enemy takes damage
+			if (gameObject.tag == "Boss") {// the boss enemy only takes damage if it is engaged with the player
 				if (GameManager.gm.CanBossEngagePlayer ()) {
 					ApplyDamage (1);
 					Destroy (collision.gameObject);
 				} else {
 					Destroy (collision.gameObject);
 				}
-			} else {
+			} else {// normal enemy always takes damage
 				ApplyDamage (1);
 				Destroy (collision.gameObject);
 			}
@@ -267,7 +269,7 @@ public class Enemy : MonoBehaviour {
 		_audio.PlayOneShot(clip);
 	}
 	
-	// setup the enemy to be stunned
+	// public function to setup the enemy to be stunned
 	public void Stunned()
 	{
 		if (!isStunned) 
@@ -313,10 +315,10 @@ public class Enemy : MonoBehaviour {
 		}
 	}
 
+	// public function to have enemy take damage.
 	public void ApplyDamage (int damage){
 		if (!isStunned) {
 			enemyHealth -= damage;
-
 			if (enemyHealth <= 0) { // enemy is now dead, so start dying
 				PlaySound (deathSFX);
 				StartCoroutine (KillEnemy ());
@@ -374,6 +376,7 @@ public class Enemy : MonoBehaviour {
 		_rigidbody.isKinematic = true;
 	}
 
+	// based on the enemy's remaining health, increase speed
 	void AdjustSpeedBasedOnRemainingHealth (){
 		switch (enemyHealth) {
 		case 38:
@@ -393,6 +396,7 @@ public class Enemy : MonoBehaviour {
 		}
 	}
 
+	// coroutine to show boss UI before boss engages the player
 	IEnumerator BossUIDisplay (){
 		Flip (-1);
 		GameManager.gm.ShowBossFightUI ();

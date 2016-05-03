@@ -4,7 +4,6 @@ using System.Collections;
 public class PlatformMover : MonoBehaviour {
 
 	public GameObject platform; // reference to the platform to move
-
 	public GameObject[] myWaypoints; // array of all the waypoints
 
 	[Range(0.0f, 10.0f)] // create a slider in the editor and set limits on moveSpeed
@@ -38,12 +37,13 @@ public class PlatformMover : MonoBehaviour {
 	}
 
 	void Movement() {
-		// if there isn't anything in My_Waypoints
+		// if there anything in My_Waypoints and can move, then start moving platform
 		if ((myWaypoints.Length != 0) && (_moving)) {
+			
 			// move towards waypoint
 			_transform.position = Vector3.MoveTowards(_transform.position, myWaypoints[_myWaypointIndex].transform.position, moveSpeed * Time.deltaTime);
 
-			// if the enemy is close enough to waypoint, make it's new target the next waypoint
+			// if the platform is close enough to waypoint, make it's new target the next waypoint
 			if(Vector3.Distance(myWaypoints[_myWaypointIndex].transform.position, _transform.position) <= 0) {
 				_myWaypointIndex++;
 				_moveTime = Time.time + waitAtWaypointTime;

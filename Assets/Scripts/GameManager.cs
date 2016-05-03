@@ -21,9 +21,11 @@ public class GameManager : MonoBehaviour {
 	public Text UIScore;
 	public Text UIHighScore;
 	public Text UILevel;
+	[Tooltip("Should only be setup when player can pickup something in the level")]
 	public GameObject UIPickup;
 	public GameObject[] UIExtraLives;
 	public GameObject UIGamePaused;
+	[Tooltip("Should only be setup for the final level")]
 	public GameObject BossFightUI;
 
 	//Game Background Music
@@ -32,10 +34,10 @@ public class GameManager : MonoBehaviour {
 	// private variables
 	GameObject _player;
 	Vector3 _spawnLocation;
-	bool bossCondition = false;
-	bool bossCanEngageCondition = false;
+	bool _bossCondition = false;
+	bool _bossCanEngageCondition = false;
 	float _deathPositionX = 0f;
-	bool initialBossEngagement = true;
+	bool _initialBossEngagement = true;
 
 	// set things up here
 	void Awake () {
@@ -127,8 +129,8 @@ public class GameManager : MonoBehaviour {
 		// set the text elements of the UI
 		UIScore.text = "Score: "+score.ToString();
 		UIHighScore.text = "Highscore: "+highscore.ToString ();
-		//UILevel.text = Application.loadedLevelName;
 		UILevel.text = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+
 		// turn on the appropriate number of life indicators in the UI based on the number of lives left
 		for(int i=0;i<UIExtraLives.Length;i++) {
 			if (i<(lives-1)) { // show one less than the number of lives since you only typically show lifes after the current life in UI
@@ -167,115 +169,90 @@ public class GameManager : MonoBehaviour {
 
 			// load the gameOver screen
 			UnityEngine.SceneManagement.SceneManager.LoadScene(levelAfterGameOver);
-		} else { // tell the player to respawn
+		} else { // tell the player to respawn based on position in a given level, which is broken up by stages
 			string current_level = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-			// level 1
+		
+			// Setup each level's boundaries and where the player can respawn
+			// level 1 boundary - stages 1 to 4
 			StageBoundary lvl1Stage1Bounds = new StageBoundary(0f,7.85f,0f);  
-			//float _lvl1_stg1_bnd_end = 7.85f;
-			//float _lvl1_stg1_res_x = 0.00f;
 			StageBoundary lvl1Stage2Bounds = new StageBoundary(7.86f,21.00f,11.00f);  
-
-			//float _lvl1_stg2_bnd_start = 7.86f;
-			//float _lvl1_stg2_bnd_end = 21.00f;
-			//float _lvl1_stg2_res_x = 11.00f;
 			StageBoundary lvl1Stage3Bounds = new StageBoundary(21.05f,41.00f,24.75f);  
-			//float _lvl1_stg3_bnd_start = 21.05f;
-			//float _lvl1_stg3_bnd_end = 41.00f;
-			//float _lvl1_stg3_res_x = 24.75f;
 			StageBoundary lvl1Stage4Bounds = new StageBoundary(41.05f,0f,41.10f);  
-			//float _lvl1_stg4_bnd_start = 41.05f;
-			//float _lvl1_stg4_res_x = 41.10f;
 
-			// level 2
-			//float _lvl2_stg1_res_x = -8.00f;
-			//float _lvl2_stg1_bnd_end = 6.85f;
+			// level 2 boundary - stages 1 to 4
 			StageBoundary lvl2Stage1Bounds = new StageBoundary(0f,6.85f,-8.00f);  
-
 			StageBoundary lvl2Stage2Bounds = new StageBoundary(6.90f,21.90f,7.60f);  
-			//float _lvl2_stg2_bnd_start = 6.90f;
-			//float _lvl2_stg2_bnd_end = 21.90f;
-			//float _lvl2_stg2_res_x = 7.60f;
 			StageBoundary lvl2Stage3Bounds = new StageBoundary(22.85f,37.89f,23.70f);  
-
-			//float _lvl2_stg3_bnd_start = 22.85f;
-			//float _lvl2_stg3_bnd_end = 37.89f;
-			//float _lvl2_stg3_res_x = 23.70f;
 			StageBoundary lvl2Stage4Bounds = new StageBoundary(37.90f,0f,37.90f);  
 
-			//float _lvl2_stg4_bnd_start = 37.90f;
-			//float _lvl2_stg4_res_x = 37.90f;
-
-			// level 3
+			// level 3 boundary - stages 1 to 4
 			StageBoundary lvl3Stage1Bounds = new StageBoundary(0f,6.85f,0f);  
-
-			//float _lvl3_stg1_res_x = 0.00f;
-			//float _lvl3_stg1_bnd_end = 6.85f;
 			StageBoundary lvl3Stage2Bounds = new StageBoundary(7.60f,17.80f,8.50f);  
-
-			//float _lvl3_stg2_bnd_start = 7.60f;
-			//float _lvl3_stg2_bnd_end = 17.80f;
-			//float _lvl3_stg2_res_x = 8.50f;
 			StageBoundary lvl3Stage3Bounds = new StageBoundary(18.00f,39.50f,18.50f);  
-
-			//float _lvl3_stg3_bnd_start = 18.00f;
-			//float _lvl3_stg3_bnd_end = 39.50f;
-			//float _lvl3_stg3_res_x = 18.50f;
 			StageBoundary lvl3Stage4Bounds = new StageBoundary(40.00f,64.00f,40.00f);  
-
-			//float _lvl3_stg4_bnd_start = 40.00f;
-			//float _lvl3_stg4_bnd_end = 64.00f;
-			//float _lvl3_stg4_res_x = 40.00f;
-
+		
 			if (current_level == "Level 1") {
-				if (_deathPositionX <= lvl1Stage1Bounds.endPosX)
+				if (_deathPositionX <= lvl1Stage1Bounds.endPosX) 
+					// if player dies before end of stage 1, spawn at stage 1 start
 					_spawnLocation = new Vector3 (lvl1Stage1Bounds.spawnPosX, -1.73f, 0f);
 				else if ((lvl1Stage2Bounds.startPosX <= _deathPositionX) && (_deathPositionX <= lvl1Stage2Bounds.endPosX))
+					// if player dies between start and end of stage 2, spawn at stage 2 start
 					_spawnLocation = new Vector3 (lvl1Stage2Bounds.spawnPosX, -1.73f, 0f);
 				else if ((lvl1Stage3Bounds.startPosX <= _deathPositionX) && (_deathPositionX <= lvl1Stage3Bounds.endPosX))
+					// if player dies between start and end of stage 3, spawn at stage 3 start
 					_spawnLocation = new Vector3 (lvl1Stage3Bounds.spawnPosX, -1.73f, 0f);
 				else if ((lvl1Stage4Bounds.startPosX <= _deathPositionX))
+					// if player dies after start of stage 4, spawn at stage 4 start
 					_spawnLocation = new Vector3 (lvl1Stage4Bounds.spawnPosX, -1.73f, 0f);
 			} else if (current_level == "Level 2") {
 				if (_deathPositionX <= lvl2Stage1Bounds.endPosX)
+					// if player dies before end of stage 1, spawn at stage 1 start
 					_spawnLocation = new Vector3 (lvl2Stage1Bounds.spawnPosX, -1.73f, 0f);
 				else if ((lvl2Stage2Bounds.startPosX <= _deathPositionX) && (_deathPositionX <= lvl2Stage2Bounds.endPosX))
+					// if player dies between start and end of stage 2, spawn at stage 2 start
 					_spawnLocation = new Vector3 (lvl2Stage2Bounds.spawnPosX, -1.73f, 0f);
 				else if ((lvl2Stage3Bounds.startPosX <= _deathPositionX) && (_deathPositionX <= lvl2Stage3Bounds.endPosX))
+					// if player dies between start and end of stage 3, spawn at stage 3 start
 					_spawnLocation = new Vector3 (lvl2Stage3Bounds.spawnPosX, -1.73f, 0f);
 				else if ((lvl2Stage4Bounds.startPosX <= _deathPositionX))
+					// if player dies after start of stage 4, spawn at stage 4 start
 					_spawnLocation = new Vector3 (lvl2Stage4Bounds.spawnPosX, -1.73f, 0f);
-			} else if (current_level == "Level 3" && !bossCondition) {
+			} else if (current_level == "Level 3" && !_bossCondition) { // if current level is 3 and not at boss then spawn accordingly
 				if (_deathPositionX <= lvl3Stage1Bounds.endPosX)
+					// if player dies before end of stage 1, spawn at stage 1 start
 					_spawnLocation = new Vector3 (lvl3Stage1Bounds.spawnPosX, -1.73f, 0f);
 				else if ((lvl3Stage2Bounds.startPosX <= _deathPositionX) && (_deathPositionX <= lvl3Stage2Bounds.endPosX))
+					// if player dies between start and end of stage 2, spawn at stage 2 start
 					_spawnLocation = new Vector3 (lvl3Stage2Bounds.spawnPosX, -1.73f, 0f);
 				else if ((lvl3Stage3Bounds.startPosX <= _deathPositionX) && (_deathPositionX <= lvl3Stage3Bounds.endPosX))
+					// if player dies between start and end of stage 3, spawn at stage 3 start
 					_spawnLocation = new Vector3 (lvl3Stage3Bounds.spawnPosX, -1.73f, 0f);
 				else if ((lvl3Stage4Bounds.startPosX <= _deathPositionX) && (_deathPositionX <= lvl3Stage4Bounds.endPosX)) {
+					// if player dies after start of stage 4, spawn at stage 4 start
 					_spawnLocation = new Vector3 (lvl3Stage4Bounds.spawnPosX, -1.73f, 0f);
+
+					// since player died on their play to the boss, reset the special sequences
 					GameObject platform = GameObject.Find ("BossStageSetupPlatform").gameObject;
-					platform.GetComponent<BossStagePlatformMover> ().resetMovement (42.38f, -2.807f);
+					platform.GetComponent<BossStagePlatformMover> ().resetPosition (42.38f, -2.807f);
 					Camera.main.GetComponent<AudioSource> ().clip = Music_Background;
 					Camera.main.GetComponent<AudioSource> ().Play ();
 					Camera.main.GetComponent<AudioSource> ().volume = 0.2f;
 				}
-			} else if (bossCondition) {
+			} else if (_bossCondition) { // otherwise if at boss, then handle spawning base on boss's location
 				GameObject bossObject = GameObject.FindGameObjectWithTag("Boss");
-				float bossStageBoundaryStartPositionX = 66f;
-				float bossStageBoundaryEndPositionX = 77f;
-				float playerSpawnPositionX = 67f;
+				StageBoundary bossStage = new StageBoundary (66f, 77f, 67f);
 
 				float bossPositionX = bossObject.transform.position.x;
-				float deathDistanceFromLeftBoundary = _deathPositionX - bossStageBoundaryStartPositionX;
-				float deathDistanceFromRightBoundary = bossStageBoundaryEndPositionX - _deathPositionX;
+				float deathDistanceFromLeftBoundary = _deathPositionX - bossStage.startPosX;
+				float deathDistanceFromRightBoundary = bossStage.endPosX - _deathPositionX;
 
 				if ((deathDistanceFromLeftBoundary > deathDistanceFromRightBoundary)) {
 					// player die's to the right of boss, spawn 2 units to his left
-					 playerSpawnPositionX  = bossPositionX - 2;
-					_spawnLocation = new Vector3 (playerSpawnPositionX, -1.73f, 0f);
+					bossStage.spawnPosX  = bossPositionX - 2;
+					_spawnLocation = new Vector3 (bossStage.spawnPosX, -1.73f, 0f);
 				} else { // player die's to the left of boss, spawn 2 units to his right
-					playerSpawnPositionX  = bossPositionX + 2;
-					_spawnLocation = new Vector3 (playerSpawnPositionX, -1.73f, 0f); 
+					bossStage.spawnPosX  = bossPositionX + 2;
+					_spawnLocation = new Vector3 (bossStage.spawnPosX, -1.73f, 0f); 
 				}
 			}
 			_player.GetComponent<CharacterController2D>().Respawn(_spawnLocation);
@@ -291,6 +268,14 @@ public class GameManager : MonoBehaviour {
 		StartCoroutine(LoadNextLevel());
 	}
 
+	// load the nextLevel after delay
+	IEnumerator LoadNextLevel() {
+		yield return new WaitForSeconds(3.5f); 
+		UnityEngine.SceneManagement.SceneManager.LoadScene(levelAfterVictory);
+	}
+
+
+	// public function to display messages to user when something is picked up
 	public void Pickup(string pickupText, bool active){
 		UIPickup.GetComponent<Text> ().text = pickupText;
 		UIPickup.SetActive (active);
@@ -298,48 +283,50 @@ public class GameManager : MonoBehaviour {
 			StartCoroutine (HidePickupUI ());
 	}
 
-	public void PlayerAtBoss (){
-		bossCondition = true;
-	}
-		
-	public bool IsPlayerAtBoss (){
-		return bossCondition;
-	}
-
-	// load the nextLevel after delay
-	IEnumerator LoadNextLevel() {
-		yield return new WaitForSeconds(3.5f); 
-		UnityEngine.SceneManagement.SceneManager.LoadScene(levelAfterVictory);
-	}
-
 	IEnumerator HidePickupUI() {
-		// destroy the dagger gameobject
+		// wait then reset pickup message and hide
 		yield return new WaitForSeconds(2.5f);
 		Pickup ("", false);
 	}
 
-	public void SetDeathPositionX (float positionX){
+	// public function to indicate player is at boss
+	public void PlayerAtBoss (){
+		_bossCondition = true;
+	}
+
+	// public function to indicate if player is at boss
+	public bool IsPlayerAtBoss (){
+		return _bossCondition;
+	}
+
+	// public function to save the x position of where the player died. Used in respawning safely.
+	public void SaveXPositionOfPlayerDeath(float positionX){
 		_deathPositionX = positionX;
 	}
 
+	// public function to indicate if player has engaged boss for the first time
 	public bool IsInitialBossEngagement (){
-		return initialBossEngagement;
+		return _initialBossEngagement;
 	}
 
+	// public function to show boss ui
 	public void ShowBossFightUI (){
 		BossFightUI.SetActive (true);
 	}
 
+	// public function to hide boss ui and then indicate player and boss are engaged
 	public void HideBossFightUI () {
-		initialBossEngagement = false;
+		_initialBossEngagement = false;
 		BossFightUI.SetActive (false);
-		bossCanEngageCondition = true;
+		_bossCanEngageCondition = true;
 	}
 
+	// public function to indicate if boss can engage player yet
 	public bool CanBossEngagePlayer(){
-		return bossCanEngageCondition;
+		return _bossCanEngageCondition;
 	}
 
+	// Inner class to handle mapping the boundary values for each stage
 	public class StageBoundary {
 		public float startPosX;
 		public float endPosX;

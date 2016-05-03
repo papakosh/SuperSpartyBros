@@ -3,8 +3,7 @@ using System.Collections;
 
 public class ThrowingDagger : MonoBehaviour {
 
-	// if the player touches the coin, it has not already been taken, and the player can move (not dead or victory)
-	// then take the coin
+	// if a thrown dagger touches a platform or moving platform, just destroy it
 	void OnCollisionEnter2D(Collision2D other)
 	{
 		if (other.gameObject.tag == "Platform" || other.gameObject.tag == "MovingPlatform")
